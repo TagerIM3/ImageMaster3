@@ -1,0 +1,52 @@
+server:
+  port: 8081
+  tomcat:
+    uri-encoding: utf-8
+
+spring:
+  resources:
+    static-locations: classpath:/META-INF/resources/, classpath:/resources/, classpath:/static/,classpath:/public/, file:${upload-path}
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/im3?useUnicode=true&characterEncoding=utf8&useSSL=false
+    username: root
+    password: 123456
+    type: com.alibaba.druid.pool.DruidDataSource
+  jpa:
+    database: mysql
+    hibernate:
+      ddl-auto: update
+      naming-strategy: org.hibernate.cfg.ImprovedNamingStrategy
+    properties:
+      hibernate:
+        dialect: tager.imagemaster.configuration.MySQL5DialectUTF8
+    show-sql: false
+    open-in-view: false
+  mail:
+    host: smtp.qq.com
+    username: 2542745324@qq.com
+    password: smdxgimgmsqrecba
+    default-encoding: UTF-8
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          connectiontimeout: 10000
+          timeout: 10000
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            enable: true
+    port: 465
+  cache:
+    type: redis
+  servlet:
+      multipart:
+        max-request-size: 100MB
+        max-file-size: 100MB
+
+#upload-path: test
+upload-path: /pictures
+

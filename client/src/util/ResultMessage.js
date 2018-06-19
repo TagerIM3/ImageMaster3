@@ -1,0 +1,13 @@
+module.exports = {
+  SUCCESS: 'SUCCESS',
+  WRONG: 'WRONG',
+  EXIST: 'EXIST',
+  NOT_EXIST: 'NOT_EXIST',
+  FULL: 'FULL',
+  FINISH: 'FINISH',
+  TIMEOUT: 'TIMEOUT',
+  FILE_DAMAGE: 'FILE_DAMAGE',
+  NO_IMAGE: 'NO_IMAGE',
+  LESS: 'LESS',
+  FAIL: 'FAIL'
+}
