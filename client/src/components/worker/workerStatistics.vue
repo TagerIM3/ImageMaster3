@@ -95,6 +95,7 @@
 
     <div style="padding-top: 12%;">
       <div style="height: 100%">
+        <accuracy></accuracy>
         <finish-tasks-in-week></finish-tasks-in-week>
       </div>
 
@@ -114,10 +115,10 @@
   import finishTasksInWeek from './finishTasksInWeek'
   import finishTasksInMonth from './finishTasksInMonth'
   import topRanking from './topRanking'
-
+  import accuracy from './accuracy'
   export default {
     name: "workerStatistics",
-    components: {finishTasksInWeek, topRanking, finishTasksInMonth},
+    components: {finishTasksInWeek, topRanking, finishTasksInMonth, accuracy},
     data() {
       return {
         efficiency: 0.0,
@@ -157,6 +158,9 @@
               for (var i = 0; i < this.goods.length; i++) {
                 this.goodsStr += this.goods[i] + ' ';
               }
+              this.preStr = '人物 风景';
+              this.goodsStr = '人物 车辆';
+              this.ranking = '7/45';
               // this.goodsStr.substr(0, this.goodsStr.length - 1);
             }
             else if (res.message === 'TIMEOUT') {
