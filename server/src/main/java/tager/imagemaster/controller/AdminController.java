@@ -22,19 +22,4 @@ public class AdminController {
     public Result getStatistics() {
         return adminService.getStatistics();
     }
-
-    @RequestMapping("/getUsers")
-    public Result getUsers() {
-        return adminService.getUsers();
-    }
-
-    @RequestMapping("/getTasks")
-    public Result getTasks() {
-        return adminService.getTasks();
-    }
-
-    @RequestMapping("/sendMessage")
-    public ResultMessage sendMessage(int userId, String content) {
-        return adminService.sendMessage(userId, content);
-    }
 }
