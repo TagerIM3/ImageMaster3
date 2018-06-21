@@ -157,7 +157,7 @@
               key: 'finish',
               render: (h, params) => {
                 const row = params.row;
-                let color = row.people - row.remaining;
+                let color = row.works;
                 color =( color / row.people )* 100
                 color = color.toFixed(2)
                 if(row.finishTime)color  =100;
