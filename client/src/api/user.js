@@ -10,9 +10,6 @@ export default {
     remote.get( data, resolve, reject,"/user/login");
   },
   register(userPre, resolve, reject) {
-
-
-
     // axios({
     //   url:'http://106.14.178.184:8080/im3/user/register',
     //   method:'post',

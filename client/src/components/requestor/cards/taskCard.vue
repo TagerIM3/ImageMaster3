@@ -9,11 +9,25 @@
       <!--&lt;!&ndash;</div>&ndash;&gt;-->
     <!--</Card>-->
     <div style="height: 5px"></div>
+
     <Card style="min-height: 360px">
       <p slot="title">近7天任务情况</p>
 
 
       <div id="card10" style="min-height: 200px;width:90%;left:5%" ></div>
+      <Modal
+        v-model="viewTask"
+        title="查看任务"
+        @on-ok=""
+        @on-cancel="">
+
+        <Table :data="show_data" :columns="tableColumns2" stripe></Table>
+        <div style="margin: 10px;overflow: hidden">
+          <div style="float: right;">
+            <Page :current="1" page-size="5" ></Page>
+          </div>
+        </div>
+      </Modal>
       <!--<div id="card11" style="min-height: 200px;width:90%;left:5%" ></div>-->
       <!--<div id="card8-1" style="height: 160px;width:100%;" v-if="showCard8 === 1">-->
       <!--<Alert type="error" show-icon>加载失败，暂无数据</Alert>-->
@@ -52,7 +66,61 @@
         xArr_7:[],
         submitTasks_7: [],
         finishTasks_7: [],
+        viewTask:false,
+        show_data:[{
+          name: '人物_1',
+          imageNum:Math.floor(Math.random()*10+1),
+          points: Math.floor(Math.random()*10+1),
+          people: Math.floor(Math.random()*10+1),
+        },
+          {
+            name: '人物_2',
+            imageNum:Math.floor(Math.random()*10+1),
+            points: Math.floor(Math.random()*10+1),
+            people: Math.floor(Math.random()*10+1),
+          },
+          {
+            name: '人物_3',
+            imageNum:Math.floor(Math.random()*10+1),
+            points: Math.floor(Math.random()*10+1),
+            people: Math.floor(Math.random()*10+1),
+          },
+          {
+            name: '人物_4',
+            imageNum:Math.floor(Math.random()*10+1),
+            points: Math.floor(Math.random()*10+1),
+            people: Math.floor(Math.random()*10+1),
+          },
+          {
+            name: '人物_5',
+            imageNum:Math.floor(Math.random()*10+1),
+            points: Math.floor(Math.random()*10+1),
+            people: Math.floor(Math.random()*10+1),
+          }
+        ],
+        tableColumns2: [
+          {
+            'title': '任务名',
+            'key': 'name',
+          },
+          {
+            'title': '图片数量',
+            'key': 'imageNum',
+          },
+          {
+            'title': '积分奖励',
+            'key': 'points',
+          },
+          {
+            'title': '所需人数',
+            'key': 'people',
+          },
+
+        ],
       }
+    },
+    mounted(){
+      this.show_data()
     },
     methods: {
       showData(submit,finish) {
@@ -62,8 +130,8 @@
         //   this.xArr[i] = 30-i;
         // }
         for(let i=0;i<7;i++){
-          this.submitTasks_7[i] = submit[23+i];
-          this.finishTasks_7[i] = finish[23+i];
+          this.submitTasks_7[i] =Math.floor(Math.random()*10+1)+5;
+          this.finishTasks_7[i] = Math.floor(Math.random()*10+1)+5;
         }
         // this.drawCard8();
         // this.drawCard9();
@@ -171,6 +239,12 @@
             },
           ]
         });
+        myChart8.on('click', params => {
+          // this.$Message.success(params.data.name);
+          console.log(this.show_data);
+          this.viewTask = true;
+
+        });
       },
       drawCard8() {
         let myChart8 = this.$echarts.init(document.getElementById('card8'));
@@ -225,6 +299,7 @@
 
           ]
         });
+
       },
 
       drawCard9() {
