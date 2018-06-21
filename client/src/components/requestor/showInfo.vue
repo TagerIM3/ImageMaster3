@@ -9,6 +9,7 @@
 
 
         <task-card ref="taskCard"></task-card>
+        <radar-card></radar-card>
 
         <!--<div>-->
           <!--<ongoingCard ref="ongoingCard"></ongoingCard>-->
@@ -25,9 +26,10 @@
   import taskCard from './cards/taskCard'
   import ongoingCard from './cards/ongoingCard'
   import finishTaskInWeek from '../worker/finishTasksInWeek'
+  import radarCard from "./cards/radarCard"
     export default {
         name: "showInfo",
-      components:{taskCard,ongoingCard,finishTaskInWeek},
+      components:{taskCard,ongoingCard,finishTaskInWeek,radarCard},
       mounted(){
         this.getStatistics()
       },
