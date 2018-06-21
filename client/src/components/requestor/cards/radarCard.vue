@@ -121,11 +121,11 @@
                   }
                 },
                 data:[
-                  {value:Math.floor(Math.random()*10), name:'人物'},
-                  {value:Math.floor(Math.random()*10), name:'动物'},
-                  {value:Math.floor(Math.random()*10), name:'风景'},
-                  {value:Math.floor(Math.random()*10), name:'车辆'},
-                  {value:Math.floor(Math.random()*10), name:'其他'}
+                  {value:Math.floor(Math.random()*50), name:'人物'},
+                  {value:Math.floor(Math.random()*50), name:'动物'},
+                  {value:Math.floor(Math.random()*50), name:'风景'},
+                  {value:Math.floor(Math.random()*50), name:'车辆'},
+                  {value:Math.floor(Math.random()*50), name:'其他'}
                 ]
               }
             ]

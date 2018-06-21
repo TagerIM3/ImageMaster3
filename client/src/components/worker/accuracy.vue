@@ -2,7 +2,7 @@
   <div>
       <Card style="min-height: 360px">
         <p slot="title">我的准确率</p>
-        <div id="card" style="min-height: 200px;width:90%;left:5%"></div>
+        <div id="card" style="min-height: 280px;width:90%;left:5%"></div>
       </Card>
     </div>
 

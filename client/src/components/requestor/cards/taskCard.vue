@@ -120,7 +120,7 @@
       }
     },
     mounted(){
-      this.show_data()
+      this.showData()
     },
     methods: {
       showData(submit,finish) {
@@ -130,8 +130,8 @@
         //   this.xArr[i] = 30-i;
         // }
         for(let i=0;i<7;i++){
-          this.submitTasks_7[i] =Math.floor(Math.random()*10+1)+5;
-          this.finishTasks_7[i] = Math.floor(Math.random()*10+1)+5;
+          this.submitTasks_7[i] =Math.floor(Math.random()*10);
+          this.finishTasks_7[i] = Math.floor(Math.random()*10);
         }
         // this.drawCard8();
         // this.drawCard9();
