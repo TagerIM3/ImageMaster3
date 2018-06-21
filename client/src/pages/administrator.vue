@@ -516,18 +516,18 @@
         myChart2.on('click', params => {
           // this.$Message.success(params.data.name);
           console.log(params);
-          if (params.data.name === '人物类') {
+          // if (params.data.name === '人物类') {
             this.data_length = this.person.length;
             this.data = this.person;
             this.changePage('1');
             this.viewTask= true;
-          }
-          else{
-            this.data_length = this.workersNum;
-            this.data = this.workerData;
-            this.changePage('1');
-            this.viewTask = true;
-          }
+          // }
+          // else{
+          //   this.data_length = this.workersNum;
+          //   this.data = this.workerData;
+          //   this.changePage('1');
+          //   this.viewTask = true;
+          // }
         });
         // myChart2.setOption(
         //   {
