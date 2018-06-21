@@ -20,13 +20,13 @@
       <!--</div>-->
     </Card>
     <div style="height: 5px"></div>
-    <Card style="min-height: 360px">
-      <p slot="title">近30天任务情况</p>
-      <div id="card8"  style="min-height: 200px;width:90%;left:5%" ></div>
-      <!--<div id="card8-1" style="height: 160px;width:100%;" v-if="showCard8 === 1">-->
-      <!--<Alert type="error" show-icon>加载失败，暂无数据</Alert>-->
-      <!--</div>-->
-    </Card>
+    <!--<Card style="min-height: 360px">-->
+      <!--<p slot="title">近30天任务情况</p>-->
+      <!--<div id="card8"  style="min-height: 200px;width:90%;left:5%" ></div>-->
+      <!--&lt;!&ndash;<div id="card8-1" style="height: 160px;width:100%;" v-if="showCard8 === 1">&ndash;&gt;-->
+      <!--&lt;!&ndash;<Alert type="error" show-icon>加载失败，暂无数据</Alert>&ndash;&gt;-->
+      <!--&lt;!&ndash;</div>&ndash;&gt;-->
+    <!--</Card>-->
     <div style="height: 5px"></div>
     <!--<Card style="min-height: 360px">-->
       <!--<p slot="title">近30天完成任务数</p>-->
@@ -65,7 +65,7 @@
           this.submitTasks_7[i] = submit[23+i];
           this.finishTasks_7[i] = finish[23+i];
         }
-        this.drawCard8();
+        // this.drawCard8();
         // this.drawCard9();
         this.drawCard10();
         // this.drawCard11();
