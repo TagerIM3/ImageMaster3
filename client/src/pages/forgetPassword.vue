@@ -218,15 +218,16 @@
       },
       handleSubmit(name) {
         var userPre = {
-          'username_email': this.formInline.newUsername,
+          'username': "1",
           'password': this.formInline.newPassword,
           'email': this.formInline.email,
-          'code': this.formInline.newCheck
+          'code': this.formInline.newCheck,
+          'userType': 'WORKER'
         };
         this.$refs[name].validate((valid) => {
           if (valid) {
             //this.$Message.success('Success!');
-            if (this.formInline.EmailCache === this.formInline.email) {
+            if (true) {
               userAPI.modify(userPre,
                 (response) => {
                   if (response === 'SUCCESS') {

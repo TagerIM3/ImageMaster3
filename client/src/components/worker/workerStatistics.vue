@@ -161,6 +161,9 @@
               this.preStr = '人物 风景';
               this.goodsStr = '人物 车辆';
               this.ranking = '7/45';
+              this.efficiency = '1.2分钟/张';
+              this.accuracy = '71.2%';
+              this.tasks = 25;
               // this.goodsStr.substr(0, this.goodsStr.length - 1);
             }
             else if (res.message === 'TIMEOUT') {
