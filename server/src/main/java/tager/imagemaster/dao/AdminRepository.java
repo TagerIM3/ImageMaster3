@@ -7,6 +7,4 @@ import tager.imagemaster.entity.user.Admin;
 @Repository
 public interface AdminRepository extends JpaRepository<Admin, Integer> {
     boolean existsByKeyt(String keyt);
-
-    Admin findByKeyt(String keyt);
 }

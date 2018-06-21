@@ -39,6 +39,6 @@ export default {
     remote.get(data, resolve, reject, "/user/send");
   },
   modify(userPre, resolve, reject) {
-    remote.queryPost(JSON.stringify(userPre), resolve, reject, "/user/modifyPassword");
+    remote.post(userPre, resolve, reject, "/user/modifyPassword");
   }
 }

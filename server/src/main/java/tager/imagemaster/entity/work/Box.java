@@ -72,4 +72,8 @@ public class Box implements Serializable {
 
     public Box() {
     }
+
+    boolean equals(Box box) {
+        return Math.abs(x - box.getX()) <= 15 && Math.abs(y - box.getY()) <= 15 && Math.abs(targetX - box.getTargetX()) <= 15 && Math.abs(targetY - box.getTargetY()) <= 15;
+    }
 }

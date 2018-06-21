@@ -7,10 +7,4 @@ public interface AdminService {
     ResultMessage login(String key);
 
     Result getStatistics();
-
-    Result getUsers();
-
-    Result getTasks();
-
-    ResultMessage sendMessage(int userId, String content);
 }

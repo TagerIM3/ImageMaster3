@@ -3,10 +3,8 @@ package tager.imagemaster.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tager.imagemaster.dao.AdminRepository;
-import tager.imagemaster.dao.MessageRepository;
 import tager.imagemaster.dao.TaskRepository;
 import tager.imagemaster.dao.UserRepository;
-import tager.imagemaster.entity.message.Message;
 import tager.imagemaster.entity.task.Task;
 import tager.imagemaster.entity.user.AdminStatistics;
 import tager.imagemaster.entity.user.User;
@@ -14,6 +12,7 @@ import tager.imagemaster.entity.user.UserType;
 import tager.imagemaster.entity.util.Result;
 import tager.imagemaster.entity.util.ResultMessage;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
@@ -28,9 +27,6 @@ public class AdminServiceImpl implements AdminService {
 
     @Autowired
     private TaskRepository taskRepository;
-
-    @Autowired
-    private MessageRepository messageRepository;
 
     @Override
     public ResultMessage login(String key) {
@@ -85,41 +81,18 @@ public class AdminServiceImpl implements AdminService {
                     statistics.submitTasks[29 - days] += 1;
             }
 
+            tasks = taskRepository.findFinish();
+
+            for (Task task : tasks) {
+                statistics.totalHour.add((int) Duration.between(task.getCreateTime(), task.getFinishTime()).toHours());
+                statistics.imageNum.add(task.getImages().size());
+                statistics.points.add(task.getReward());
+            }
+
             return new Result(statistics);
         } catch (Exception e) {
             e.printStackTrace();
             return new Result(ResultMessage.FAIL);
-        }
-    }
-
-    @Override
-    public Result getUsers() {
-        try {
-            return new Result(userRepository.findAll());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new Result(ResultMessage.FAIL);
-        }
-    }
-
-    @Override
-    public Result getTasks() {
-        try {
-            return new Result(taskRepository.findAll());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new Result(ResultMessage.FAIL);
-        }
-    }
-
-    @Override
-    public ResultMessage sendMessage(int userId, String content) {
-        try {
-            messageRepository.saveAndFlush(new Message(userId, content));
-            return ResultMessage.SUCCESS;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResultMessage.FAIL;
         }
     }
 }

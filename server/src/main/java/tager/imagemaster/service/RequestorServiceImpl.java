@@ -19,12 +19,16 @@ import tager.imagemaster.entity.work.Mark;
 import tager.imagemaster.entity.work.Work;
 import tager.imagemaster.util.FileUtil;
 import tager.imagemaster.util.RedisUtil;
+import tager.imagemaster.util.SimilarUtil;
 
 import javax.annotation.Resource;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class RequestorServiceImpl implements RequestorService {
@@ -112,6 +116,8 @@ public class RequestorServiceImpl implements RequestorService {
 
             List<Work> works = workRepository.findByRequestor(taskId);
 
+            int workSize = works.size();
+
             List<Mark> marks;
 
             List<MarkIntegration> markIntegrations = new ArrayList<>(size);
@@ -127,116 +133,83 @@ public class RequestorServiceImpl implements RequestorService {
 
                 MarkIntegration markIntegration = new MarkIntegration();
 
-                Map<String, Integer> mapWord = new HashMap<>();
-//                    Map<Box, Integer> mapBox = new HashMap<>();
-//                    Map<Area, Integer> mapArea = new HashMap<>();
+                List<String> words = new ArrayList<>();
 
-                int countWord = 0;
-//                    int countArea = 0;
                 List<Box> boxes = new ArrayList<>();
 
                 for (Mark mark : marks) {
-                    String[] words = mark.getWords();
-                    countWord += words.length;
-                    for (String word : words) {
-                        if (!mapWord.containsKey(word))
-                            mapWord.put(word, 1);
-                        else
-                            mapWord.put(word, mapWord.get(word) + 1);
-                    }
+                    for (String word : mark.getWords())
+                        words.add(word);
 
-                    List<Box> markBoxes = mark.getBoxes();
-                    if (markBoxes.size() > 1 && getCenter(markBoxes.get(0)).equals(getCenter(markBoxes.get(1))))
-                        boxes.add(markBoxes.get(0));
-                    else
-                        boxes.addAll(markBoxes);
+                    boxes.addAll(mark.getBoxes());
                 }
 
-                if (mapWord.size() > 0) {
 
-                    List<Map.Entry<String, Integer>> list = new ArrayList<>(mapWord.entrySet());
+                if (words.size() > 0) {
+                    Map<String, Double> map = new HashMap<>();
+                    findSimilarity(words, words, map);
 
-                    list.sort((o1, o2) -> o2.getValue() - o1.getValue());
+                    List<Map.Entry<String, Double>> list = new ArrayList<>(map.entrySet());
 
-                    List<String> wordsIntegration = new ArrayList<>();
+                    list.sort((o1, o2) -> {
+                        if (o2.getValue() > o1.getValue()) return 1;
+                        return -1;
+                    });
 
-                    wordsIntegration.add(list.get(0).getKey());
-
-                    for (int j = 1; j < list.size(); j++) {
-                        if (j >= countWord / 2)
-                            wordsIntegration.add(list.get(j).getKey());
-                        else
-                            break;
-                    }
-
-                    markIntegration.words = wordsIntegration.toArray(new String[0]);
+                    markIntegration.words = new String[]{list.get(0).getKey()};
                 }
 
                 if (boxes.size() > 0) {
-                    boolean notEqual = false;
+                    //int k = 2;
+                    List<Cluster> clusters = new ArrayList<>();
 
-                    for (int j = 0; j < boxes.size() - 1; j++) {
-                        if (notEqual)
-                            break;
+                    clusters.add(new Cluster(boxes.get((int) (Math.random() * boxes.size()))));
 
-                        for (int k = j + 1; k < boxes.size(); k++) {
-                            if (!getCenter(boxes.get(j)).equals(boxes.get(k))) {
-                                notEqual = true;
+                    for (Box box : boxes) {
+                        for (int j = 0; j < clusters.size(); j++)
+                            if (!clusters.get(j).in(box)) {
+                                clusters.add(new Cluster(box));
                                 break;
                             }
-                        }
                     }
 
-                    int k = notEqual ? 2 : 1;
-                    Cluster[] clusters = new Cluster[k];
+                    int Nmin = workSize / 3;
 
-                    for (int j = 0; j < k; j++)
-                        clusters[j] = new Cluster();
+                    for (int j = 0; j < clusters.size(); j++) {
+                        List<Box> JBoxes = clusters.get(j).boxes;
 
-                    clusters[0].coordinate = getCenter(boxes.get(0));
+                        if (JBoxes.size() < Nmin) {
+                            for (Box box : JBoxes) {
+                                int min = -1;
+                                double minDistance = Double.MAX_VALUE;
+                                for (int m = 0; m < clusters.size(); m++) {
+                                    if (m != j) {
+                                        double distance = getCenter(box).getDistance(getCenter(clusters.get(m).centerBox));
 
-                    Map<Coordinate, Double> map = new HashMap<>();
-
-                    for (int j = 1; j < k; j++) {
-                        double minDistance = Double.MAX_VALUE;
-
-                        for (Box box : boxes) {
-                            for (int m = 0; m < j; m++) {
-                                Coordinate coordinate = getCenter(box);
-                                double distance = coordinate.getDistance(clusters[m].coordinate);
-
-                                if (distance < minDistance)
-                                    minDistance = distance;
+                                        if (distance < minDistance) {
+                                            minDistance = distance;
+                                            min = m;
+                                        }
+                                    }
+                                }
+                                clusters.get(min).boxes.add(box);
                             }
 
-                            map.put(getCenter(box), minDistance);
+                            clusters.remove(j);
+                            j--;
                         }
-
-                        List<Map.Entry<Coordinate, Double>> list = new ArrayList<>(map.entrySet());
-
-                        list.sort((o1, o2) -> {
-                            if (o2.getValue() > o1.getValue()) return 1;
-                            return -1;
-                        });
-
-                        clusters[j].coordinate = list.get(0).getKey();
                     }
 
                     boolean change;
                     int remain = 100;
+
                     do {
-                        change = false;
-                        Coordinate[] center = new Coordinate[k];
-
-                        for (Cluster cluster : clusters)
-                            cluster.boxes = new ArrayList<>();
-
                         for (Box box : boxes) {
                             double minDistance = Double.MAX_VALUE;
                             int m = -1;
 
-                            for (int j = 0; j < k; j++) {
-                                double distance = clusters[j].coordinate.getDistance(getCenter(box));
+                            for (int j = 0; j < clusters.size(); j++) {
+                                double distance = getCenter(box).getDistance(getCenter(clusters.get(j).centerBox));
 
                                 if (distance < minDistance) {
                                     minDistance = distance;
@@ -244,86 +217,91 @@ public class RequestorServiceImpl implements RequestorService {
                                 }
                             }
 
-                            clusters[m].boxes.add(box);
+                            clusters.get(m).boxes.add(box);
                         }
 
-                        for (int j = 0; j < k; j++) {
-                            Cluster cluster = clusters[j];
-                            center[j] = cluster.coordinate;
-                            double distanceX = 0.;
-                            double distanceY = 0.;
+                        change = false;
+                        for (Cluster cluster : clusters) {
+                            List<Box> clusterBoxes = cluster.boxes;
+                            Map<Box, Double> map = new HashMap<>();
 
-                            for (Box box : cluster.boxes) {
-                                distanceX += cluster.coordinate.x - getCenter(box).x;
-                                distanceY += cluster.coordinate.y - getCenter(box).y;
-                            }
+                            for (Box box : clusterBoxes)
+                                map.put(box, getCenter(box).getDistance(new Coordinate(0, 0)));
 
-                            cluster.coordinate.x = cluster.coordinate.x - distanceX / cluster.boxes.size();
-                            cluster.coordinate.y = cluster.coordinate.y - distanceY / cluster.boxes.size();
-                        }
+                            List<Map.Entry<Box, Double>> list = new ArrayList<>(map.entrySet());
 
-                        for (int j = 0; j < k; j++) {
-                            if (!clusters[j].coordinate.equals(center[j])) {
+                            list.sort((o1, o2) -> {
+                                if (o2.getValue() > o1.getValue())
+                                    return 1;
+                                return -1;
+                            });
+
+                            Box medianBox = list.get(list.size() / 2).getKey();
+
+                            if (!getCenter(medianBox).equals(getCenter(cluster.centerBox)))
                                 change = true;
-                                break;
-                            }
+
+                            cluster.centerBox = medianBox;
                         }
+
                         remain--;
                     } while (change && remain > 0);
 
-                    boxes = new ArrayList<>();
-
                     for (Cluster cluster : clusters) {
-                        List<Box> clusterBoxes = cluster.boxes;
-                        Map<String, Integer> mapBox = new HashMap<>();
+                        List<Double> list[] = new ArrayList[4];
+                        for (int j = 0; j < 4; j++)
+                            list[j] = new ArrayList<>();
+                        List<String> boxWords = new ArrayList<>();
 
-                        if (clusterBoxes.size() > 0) {
-                            double x = 0.;
-                            double y = 0.;
-                            double targetX = 0.;
-                            double targetY = 0.;
-
-                            for (Box box : clusterBoxes) {
-                                x += box.getX();
-                                y += box.getY();
-                                targetX += box.getTargetX();
-                                targetY += box.getTargetY();
-                                String word = box.getWord();
-
-                                if (!mapBox.containsKey(box.getWord()))
-                                    mapBox.put(box.getWord(), 1);
-                                else
-                                    mapBox.put(word, mapBox.get(word) + 1);
-                            }
-
-                            x /= clusterBoxes.size();
-                            y /= clusterBoxes.size();
-                            targetX /= clusterBoxes.size();
-                            targetY /= clusterBoxes.size();
-
-                            List<Map.Entry<String, Integer>> list = new ArrayList<>(mapBox.entrySet());
-
-                            list.sort((o1, o2) -> o2.getValue() - o1.getValue());
-                            boxes.add(new Box(x, y, targetX, targetY, list.get(0).getKey(), "1"));
+                        for (Box box : cluster.boxes) {
+                            list[0].add(box.getX());
+                            list[1].add(box.getY());
+                            list[2].add(box.getTargetX());
+                            list[3].add(box.getTargetY());
+                            boxWords.add(box.getWord());
                         }
+
+                        for (int j = 0; j < 4; j++)
+                            list[j].sort((o1, o2) -> {
+                                if (o2 > o1)
+                                    return 1;
+                                return -1;
+                            });
+
+                        Map<String, Double> map = new HashMap<>();
+                        findSimilarity(words, boxWords, map);
+
+                        List<Map.Entry<String, Double>> mapList = new ArrayList<>(map.entrySet());
+
+                        mapList.sort((o1, o2) -> {
+                            if (o2.getValue() > o1.getValue()) return 1;
+                            return -1;
+                        });
+
+                        Box box = new Box();
+                        box.setX(list[0].get(list[0].size() / 2));
+                        box.setY(list[1].get(list[1].size() / 2));
+                        box.setTargetX(list[2].get(list[2].size() / 2));
+                        box.setTargetY(list[3].get(list[3].size() / 2));
+                        box.setWord(mapList.get(0).getKey());
+
+                        markIntegration.boxes.add(box);
                     }
-
-                    markIntegration.boxes = boxes;
                 }
 
-                double beforeAccuracy = 0.;
-                int biggest = 0;
-                for (int j = 0; j < works.size(); j++) {
-                    Work work = works.get(j);
-                    Mark mark = work.getMarks().get(i);
-                    double accuracy = compare(mark, markIntegration);
-                    work.setAccuracy(work.getAccuracy() + accuracy);
-                    if (accuracy > beforeAccuracy)
-                        biggest = j;
-                    beforeAccuracy = accuracy;
-                }
+//                double beforeAccuracy = 0.;
+//                int biggest = 0;
+//                for (int j = 0; j < workSize; j++) {
+//                    Work work = works.get(j);
+//                    Mark mark = work.getMarks().get(i);
+//                    double accuracy = compare(mark, markIntegration);
+//                    work.setAccuracy(work.getAccuracy() + accuracy);
+//                    if (accuracy > beforeAccuracy)
+//                        biggest = j;
+//                    beforeAccuracy = accuracy;
+//                }
 
-                markIntegration.areas = works.get(biggest).getMarks().get(i).getAreas();
+//                markIntegration.areas = works.get(biggest).getMarks().get(i).getAreas();
                 markIntegrations.add(markIntegration);
             }
 
@@ -338,6 +316,9 @@ public class RequestorServiceImpl implements RequestorService {
             messageRepository.saveAndFlush(new Message(task.getRequestorId(), "您的'" + taskName + "'任务已结束，请注意查看"));
 
             for (Work work : works) {
+                for (int i = 0; i < size; i++) {
+                    work.setAccuracy(work.getAccuracy() + compare(work.getMarks().get(i), markIntegrations.get(i)));
+                }
                 work.setAccuracy(((int) (work.getAccuracy() / size * 100)) / 100.);
                 workRepository.saveAndFlush(work);
                 User user = userRepository.findById(work.getWorkerId());
@@ -354,32 +335,51 @@ public class RequestorServiceImpl implements RequestorService {
         }
     }
 
+    private void findSimilarity(List<String> words, List<String> boxWords, Map<String, Double> map) {
+        for (int j = 0; j < boxWords.size(); j++) {
+            String word = boxWords.get(j);
+
+            if (!map.containsKey(word))
+                map.put(word, 0.);
+
+            for (int k = 0; k < words.size(); k++) {
+                if (k != j) {
+                    map.put(word, map.get(word) + SimilarUtil.getSimilarityRatio(word, words.get(k)));
+                }
+            }
+        }
+    }
+
     private double compare(Mark mark, MarkIntegration markIntegration) {
         double accuracy = 0.;
 
         String[] words = mark.getWords();
-        List<String> list = Arrays.asList(markIntegration.words);
+        String word1 = markIntegration.words[0];
         for (String word : words) {
-            if (list.contains(word)) {
-                accuracy += 1.0 / (list.size() * 3);
+            if (SimilarUtil.getSimilarityRatio(word, word1) >= 0.5) {
+                accuracy += 1. / 3;
+                break;
             }
         }
 
-        List<Box> boxes = markIntegration.boxes;
+        double biggestAccuracy = 0.;
 
-
-        boolean hit = false;
-        for (Box box : boxes) {
-            for (Box box1 : mark.getBoxes()) {
-                if (getCenter(box).equals(getCenter(box1))) {
-                    hit = true;
-                    accuracy += 1.0 / 3 / markIntegration.boxes.size();
-                    break;
+        for (Box box : mark.getBoxes()) {
+            for (Box box1 : markIntegration.boxes) {
+                double ownAccuracy = 0.;
+                if (box.equals(box1)) {
+                    ownAccuracy += 1. / 3;
+                    if (SimilarUtil.getSimilarityRatio(box.getWord(), box1.getWord()) >= 0.5)
+                        ownAccuracy += 1. / 3;
                 }
+
+                if (ownAccuracy > biggestAccuracy)
+                    biggestAccuracy = ownAccuracy;
             }
         }
-        if (hit)
-            accuracy += 1. / 3;
+
+        accuracy += biggestAccuracy;
+
         return accuracy;
     }
 
@@ -473,8 +473,8 @@ public class RequestorServiceImpl implements RequestorService {
             this.y = y;
         }
 
-        public boolean equals(Coordinate coordinate) {
-            return Math.sqrt(Math.pow(x - coordinate.x, 2) + Math.pow(y - coordinate.y, 2)) <= 20;
+        boolean equals(Coordinate coordinate) {
+            return this.x == coordinate.x && this.y == coordinate.y;
         }
 
         double getDistance(Coordinate coordinate) {
@@ -483,8 +483,19 @@ public class RequestorServiceImpl implements RequestorService {
     }
 
     class Cluster {
-        Coordinate coordinate;
+        Box centerBox;
 
         List<Box> boxes = new ArrayList<>();
+
+        public Cluster(Box centerBox) {
+            this.centerBox = centerBox;
+        }
+
+        boolean in(Box box) {
+            Coordinate coordinate = getCenter(box);
+            double x = coordinate.x;
+            double y = coordinate.y;
+            return x > centerBox.getX() && y > centerBox.getY() && x < centerBox.getTargetX() && y < centerBox.getTargetY();
+        }
     }
 }
